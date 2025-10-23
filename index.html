@@ -7,102 +7,147 @@
   <style>
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f1a;
+      color: white;
       height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
     }
     .login-box {
-      background: white;
+      position: relative;
+      z-index: 1;
+      background: rgba(15, 15, 30, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
       padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      border-radius: 20px;
       width: 100%;
       max-width: 400px;
       text-align: center;
+      box-shadow: 0 0 40px rgba(100, 100, 255, 0.2);
     }
-    .login-box h1 {
-      font-size: 24px;
-      margin-bottom: 24px;
-      color: #2563eb;
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
     }
-    .login-box input {
+    h1 {
+      font-size: 26px;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    input {
       width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
+      padding: 14px;
+      margin: 10px 0;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      background: rgba(0,0,0,0.3);
+      color: white;
       font-size: 16px;
     }
-    .login-box button {
+    button {
       width: 100%;
-      padding: 12px;
-      background: #2563eb;
+      padding: 14px;
+      background: linear-gradient(90deg, #6366f1, #4f46e5);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       margin-top: 16px;
+      transition: transform 0.2s;
     }
-    .login-box button:hover {
-      background: #1d4ed8;
+    button:hover {
+      transform: translateY(-2px);
     }
   </style>
 </head>
 <body>
-  <div class="login-box">
-    <h1>Vonyuchiy Veter CRM</h1>
-    <form id="login">
-      <input type="text" id="user" placeholder="Логин" required />
-      <input type="password" id="pass" placeholder="Пароль" required />
-      <button type="submit">Войти</button>
-    </form>
+  <canvas id="bg"></canvas>
+  <div class="container">
+    <div class="login-box">
+      <h1>Vonyuchiy Veter CRM</h1>
+      <form id="login">
+        <input type="text" id="user" placeholder="Логин" required />
+        <input type="password" id="pass" placeholder="Пароль" required />
+        <button type="submit">Войти</button>
+      </form>
+    </div>
   </div>
 
   <script>
-    // Создаём админа при первом запуске
+    // Инициализация пользователя
     if (!localStorage.getItem('users')) {
-      localStorage.setItem('users', JSON.stringify([
-        { username: 'admin', password: 'admin123', role: 'admin' }
-      ]));
+      localStorage.setItem('users', JSON.stringify([{username:'admin',password:'admin123',role:'admin'}]));
     }
 
-    document.getElementById('login').addEventListener('submit', function(e) {
+    // Анимация фона
+    const canvas = document.getElementById('bg');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    for (let i = 0; i < 80; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2 + 0.5,
+        speedX: (Math.random() - 0.5) * 0.5,
+        speedY: (Math.random() - 0.5) * 0.5
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        p.x += p.speedX;
+        p.y += p.speedY;
+        if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Логин
+    document.getElementById('login').onsubmit = function(e) {
       e.preventDefault();
       const u = document.getElementById('user').value.trim();
       const p = document.getElementById('pass').value;
       const users = JSON.parse(localStorage.getItem('users') || '[]');
       const user = users.find(x => x.username === u && x.password === p);
-
       if (user) {
         localStorage.setItem('currentUser', u);
         localStorage.setItem('userRole', user.role);
-        // Создаём минимальную главную страницу
-        const home = `
-          <!DOCTYPE html>
-          <html>
-          <head><title>Главная</title></head>
-          <body style="font-family:sans-serif;padding:40px;background:#f0f4ff;">
-            <h2>Добро пожаловать, ${u}!</h2>
-            <p>Роль: ${user.role}</p>
-            <button onclick="localStorage.clear(); location.reload();" 
-              style="padding:10px 20px;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;">
-              Выйти
-            </button>
-          </body>
-          </html>
-        `;
-        const blob = new Blob([home], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_self');
+        window.location = 'leads.html';
       } else {
         alert('❌ Неверный логин или пароль');
       }
-    });
+    };
   </script>
 </body>
 </html>
