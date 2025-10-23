@@ -1,164 +1,141 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Клиент — Vonyuchiy Veter CRM</title>
-  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7ff;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .logo {
+      font-size: 22px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .btn {
+      padding: 10px 20px;
+      background: #6b7280;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .container {
+      padding: 30px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      padding: 24px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #4b5563;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .actions {
+      text-align: right;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <div class="dashboard">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h2>Vonyuchiy Veter CRM</h2>
-        <p id="userRole"></p>
-      </div>
-      <ul class="nav-links">
-        <li><a href="home.html">Главная</a></li>
-        <li><a href="leads.html">Лиды</a></li>
-        <li id="adminLink" style="display:none;"><a href="admin.html">Админка</a></li>
-      </ul>
-    </aside>
-    <main class="main-content">
-      <div class="header">
-        <h1 id="clientName">—</h1>
-        <button class="btn btn-danger" onclick="window.location='leads.html'">Назад</button>
-      </div>
-
-      <div style="background:var(--card); padding:24px; border-radius:12px; box-shadow:0 2px 10px var(--shadow); border:1px solid var(--border);">
-        <div class="form-group">
-          <label>Имя</label>
-          <input type="text" id="name" placeholder="Имя клиента">
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="email">
-        </div>
-        <div class="form-group">
-          <label>Телефон</label>
-          <input type="tel" id="phone">
-        </div>
-        <div class="form-group">
-          <label>Страна</label>
-          <input type="text" id="country">
-        </div>
-        <div class="form-group">
-          <label>Источник</label>
-          <input type="text" id="source">
-        </div>
-        <div class="form-group">
-          <label>Менеджер</label>
-          <input type="text" id="manager" readonly>
-        </div>
-        <div class="form-group">
-          <label>Статус</label>
-          <select id="status">
-            <option value="new">New</option>
-            <option value="call-back">Call Back</option>
-            <option value="no-answer">No Answer</option>
-            <option value="closed">Closed</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Напоминание</label>
-          <input type="datetime-local" id="reminder">
-        </div>
-
-        <div class="form-group">
-          <label>Комментарий</label>
-          <textarea id="comment" placeholder="Добавьте комментарий"></textarea>
-        </div>
-        <button class="btn btn-primary" onclick="saveClient()">Сохранить изменения</button>
-        <button class="btn" onclick="addComment()">Добавить комментарий</button>
-
-        <div id="commentsList" style="margin-top:20px;"></div>
-      </div>
-    </main>
+  <div class="header">
+    <div class="logo">Vonyuchiy Veter CRM</div>
+    <button class="btn" onclick="window.location='leads.html'">Назад</button>
   </div>
 
-  <script src="js/data.js"></script>
-  <script>
-    let clientId, currentUser, userRole;
+  <div class="container">
+    <div class="card">
+      <h2 id="clientName">—</h2>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email">
+      </div>
+      <div class="form-group">
+        <label>Телефон</label>
+        <input type="tel" id="phone">
+      </div>
+      <div class="form-group">
+        <label>Статус</label>
+        <select id="status">
+          <option value="new">New</option>
+          <option value="call-back">Call Back</option>
+          <option value="no-answer">No Answer</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Комментарий</label>
+        <textarea id="comment" placeholder="Добавьте комментарий"></textarea>
+      </div>
+      <div class="actions">
+        <button class="btn" style="background:#4f46e5;" onclick="saveClient()">Сохранить</button>
+      </div>
+    </div>
+  </div>
 
-    function logout() {
-      localStorage.removeItem('user');
-      localStorage.removeItem('role');
-      window.location = 'index.html';
+  <script>
+    let clientId;
+
+    function saveClient() {
+      const leads = JSON.parse(localStorage.getItem('leads') || '[]');
+      const idx = leads.findIndex(l => l.id === clientId);
+      if (idx !== -1) {
+        leads[idx].email = document.getElementById('email').value.trim();
+        leads[idx].phone = document.getElementById('phone').value.trim();
+        leads[idx].status = document.getElementById('status').value;
+        // комментарии можно добавить отдельно при желании
+        localStorage.setItem('leads', JSON.stringify(leads));
+        alert('✅ Сохранено');
+      }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      currentUser = localStorage.getItem('user');
-      userRole = localStorage.getItem('role');
-      if (!currentUser || !userRole) return window.location = 'index.html';
-
-      document.getElementById('userRole').textContent = `${userRole === 'admin' ? 'Админ' : 'Менеджер'}: ${currentUser}`;
-      if (userRole === 'admin') document.getElementById('adminLink').style.display = 'block';
-
+      if (!localStorage.getItem('currentUser')) return window.location = 'index.html';
       clientId = new URLSearchParams(window.location.search).get('id');
       if (!clientId) return window.location = 'leads.html';
 
-      const client = getClientById(clientId);
+      const leads = JSON.parse(localStorage.getItem('leads') || '[]');
+      const client = leads.find(l => l.id === clientId);
       if (!client) return window.location = 'leads.html';
 
-      document.getElementById('clientName').textContent = client.name || '—';
-      document.getElementById('name').value = client.name || '';
+      document.getElementById('clientName').textContent = client.name;
       document.getElementById('email').value = client.email || '';
       document.getElementById('phone').value = client.phone || '';
-      document.getElementById('country').value = client.country || '';
-      document.getElementById('source').value = client.source || '';
-      document.getElementById('manager').value = client.manager || currentUser;
       document.getElementById('status').value = client.status || 'new';
-      if (client.reminder) {
-        document.getElementById('reminder').value = client.reminder;
-      }
-
-      loadComments();
     });
-
-    function saveClient() {
-      const data = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
-        country: document.getElementById('country').value,
-        source: document.getElementById('source').value,
-        manager: document.getElementById('manager').value,
-        status: document.getElementById('status').value,
-        reminder: document.getElementById('reminder').value
-      };
-      updateClient(clientId, data);
-      alert('Изменения сохранены!');
-    }
-
-    function addComment() {
-      const text = document.getElementById('comment').value.trim();
-      if (text) {
-        addCommentToStorage(clientId, text, currentUser);
-        document.getElementById('comment').value = '';
-        loadComments();
-      }
-    }
-
-    function addCommentToStorage(clientId, text, author) {
-      const all = JSON.parse(localStorage.getItem('comments') || '{}');
-      if (!all[clientId]) all[clientId] = [];
-      all[clientId].push({
-        id: Date.now(),
-        text,
-        author,
-        date: new Date().toLocaleString()
-      });
-      localStorage.setItem('comments', JSON.stringify(all));
-    }
-
-    function loadComments() {
-      const comments = getComments(clientId);
-      const container = document.getElementById('commentsList');
-      container.innerHTML = comments.map(c => `
-        <div style="background:rgba(59,130,246,0.05); padding:12px; border-radius:8px; margin:10px 0;">
-          <strong>${c.author}</strong> — ${c.date}<br>${c.text}
-        </div>
-      `).join('');
-    }
   </script>
 </body>
 </html>
