@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Админка — Vonyuchiy Veter CRM</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Vonyuchiy Veter CRM</h2>
+        <p id="userRole"></p>
+      </div>
+      <ul class="nav-links">
+        <li><a href="home.html">Главная</a></li>
+        <li><a href="leads.html">Лиды</a></li>
+        <li><a href="admin.html" class="active">Админка</a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div class="header">
+        <h1>Администрирование</h1>
+        <button class="btn btn-danger" onclick="logout()">Выйти</button>
+      </div>
+
+      <div style="background:var(--card); padding:24px; border-radius:12px; box-shadow:0 2px 10px var(--shadow); border:1px solid var(--border); margin-bottom:24px;">
+        <h3>Создать пользователя</h3>
+        <div class="form-group">
+          <label>Логин</label>
+          <input type="text" id="newUser" placeholder="Логин">
+        </div>
+        <div class="form-group">
+          <label>Пароль</label>
+          <input type="password" id="newPass" placeholder="Пароль">
+        </div>
+        <div class="form-group">
+          <label>Роль</label>
+          <select id="newRole">
+            <option value="manager">Менеджер</option>
+            <option value="admin">Администратор</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="createUser()">Создать</button>
+        <p id="userMsg" style="margin-top:10px; color:var(--success);"></p>
+      </div>
+
+      <div style="background:var(--card); padding:24px; border-radius:12px; box-shadow:0 2px 10px var(--shadow); border:1px solid var(--border);">
+        <h3>Список пользователей</h3>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Логин</th>
+                <th>Роль</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script>
+    function logout() {
+      localStorage.removeItem('user');
+      localStorage.removeItem('role');
+      window.location = 'index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const user = localStorage.getItem('user');
+      const role = localStorage.getItem('role');
+      if (role !== 'admin') return window.location = 'home.html';
+
+      document.getElementById('userRole').textContent = `Админ: ${user}`;
+      loadUsers();
+    });
+
+    function createUser() {
+      const u = document.getElementById('newUser').value.trim();
+      const p = document.getElementById('newPass').value;
+      const r = document.getElementById('newRole').value;
+      const msg = document.getElementById('userMsg');
+
+      if (!u || !p) {
+        msg.textContent = 'Заполните все поля';
+        msg.style.color = 'var(--danger)';
+        return;
+      }
+
+      if (createUser(u, p, r)) {
+        msg.textContent = '✅ Пользователь создан';
+        msg.style.color = 'var(--success)';
+        document.getElementById('newUser').value = '';
+        document.getElementById('newPass').value = '';
+        loadUsers();
+      } else {
+        msg.textContent = '❌ Логин занят';
+        msg.style.color = 'var(--danger)';
+      }
+    }
+
+    function loadUsers() {
+      const users = getUsers().filter(u => u.username !== 'admin');
+      const tbody = document.getElementById('usersTable');
+      tbody.innerHTML = users.map(u => `
+        <tr>
+          <td>${u.username}</td>
+          <td>${u.role}</td>
+          <td><button class="btn btn-danger" onclick="deleteUser('${u.username}')">Удалить</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function deleteUser(username) {
+      if (confirm(`Удалить пользователя ${username}?`)) {
+        if (deleteUser(username)) {
+          loadUsers();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
