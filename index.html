@@ -4,35 +4,103 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vonyuchiy Veter CRM</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-box {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .login-box h1 {
+      font-size: 24px;
+      margin-bottom: 24px;
+      color: #2563eb;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    .login-box button:hover {
+      background: #1d4ed8;
+    }
+  </style>
 </head>
-<body class="login-body">
+<body>
   <div class="login-box">
-    <h1 class="welcome-title">Vonyuchiy Veter CRM</h1>
-    <form id="loginForm">
-      <input type="text" id="username" placeholder="Логин" required />
-      <input type="password" id="password" placeholder="Пароль" required />
+    <h1>Vonyuchiy Veter CRM</h1>
+    <form id="login">
+      <input type="text" id="user" placeholder="Логин" required />
+      <input type="password" id="pass" placeholder="Пароль" required />
       <button type="submit">Войти</button>
     </form>
   </div>
 
-  <script src="js/auth.js"></script>
-  <script src="js/data.js"></script>
   <script>
-    initAuth();
-    initStorage();
+    // Создаём админа при первом запуске
+    if (!localStorage.getItem('users')) {
+      localStorage.setItem('users', JSON.stringify([
+        { username: 'admin', password: 'admin123', role: 'admin' }
+      ]));
+    }
 
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
+    document.getElementById('login').addEventListener('submit', function(e) {
       e.preventDefault();
-      const u = document.getElementById('username').value.trim();
-      const p = document.getElementById('password').value;
-      const user = authenticate(u, p);
+      const u = document.getElementById('user').value.trim();
+      const p = document.getElementById('pass').value;
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(x => x.username === u && x.password === p);
+
       if (user) {
-        localStorage.setItem('user', u);
-        localStorage.setItem('role', user.role);
-        window.location = 'home.html';
+        localStorage.setItem('currentUser', u);
+        localStorage.setItem('userRole', user.role);
+        // Создаём минимальную главную страницу
+        const home = `
+          <!DOCTYPE html>
+          <html>
+          <head><title>Главная</title></head>
+          <body style="font-family:sans-serif;padding:40px;background:#f0f4ff;">
+            <h2>Добро пожаловать, ${u}!</h2>
+            <p>Роль: ${user.role}</p>
+            <button onclick="localStorage.clear(); location.reload();" 
+              style="padding:10px 20px;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;">
+              Выйти
+            </button>
+          </body>
+          </html>
+        `;
+        const blob = new Blob([home], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_self');
       } else {
-        alert('Неверный логин или пароль');
+        alert('❌ Неверный логин или пароль');
       }
     });
   </script>
